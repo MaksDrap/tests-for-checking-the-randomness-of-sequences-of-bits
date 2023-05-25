@@ -31,15 +31,40 @@ def max_length_test(sequence):
     return True
 
 
+def generate_sequence(length):
+    sequence = [random.choice([0, 1]) for _ in range(length)]
+    return sequence
+
+
 def pokker_test(sequence):
     m = 4  # Довжина блоку Поккера
     k = len(sequence) // m  # Кількість блоків Поккера
-    pokker_blocks = [sequence[i * m: (i + 1) * m] for i in range(k)]
-    pokker_frequencies = [pokker_blocks.count(block) for block in pokker_blocks]
-    X3 = (16 / 5000) * sum([(f - 625) ** 2 for f in pokker_frequencies]) - 5000
-    if X3 < 1.03 or X3 > 57.4:
-        return False
-    return True
+
+    def count_block_frequencies(sequence, block_length):
+        frequencies = {}
+        for i in range(len(sequence) - block_length + 1):
+            block = tuple(sequence[i:i + block_length])
+            if block in frequencies:
+                frequencies[block] += 1
+            else:
+                frequencies[block] = 1
+        return frequencies
+
+    def calculate_expected_frequency(block_length, sequence_length):
+        possible_blocks = 2 ** block_length
+        return sequence_length / possible_blocks
+
+    block_frequencies = count_block_frequencies(sequence, m)
+    observed_frequencies = list(block_frequencies.values())
+    expected_frequency = calculate_expected_frequency(m, len(sequence))
+
+    X2 = sum((observed - expected_frequency) ** 2 / expected_frequency for observed in observed_frequencies)
+    chi_square = 11.3449  
+
+    if X2 < chi_square:
+        return True
+    return False
+
 
 
 def length_test(sequence):
